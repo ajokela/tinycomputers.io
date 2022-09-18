@@ -31,8 +31,15 @@
 #define FILLMEIN 0x45
 
 // This EUI must be in little-endian format, so least-significant-byte
-// first. When copying an EUI from ttnctl output, this means to reverse
-// the bytes. 
+// first.
+
+/*
+ *  APPEUI and DEVUI need to be in little-endian format.  
+ *  Take your values from the Helium console, and put them into TinyComputers' EUI Converter
+ *  
+ *  https://tinycomputers.io/pages/arduino-lmic-eui-generator.html
+ * 
+ */
 
 static const u1_t PROGMEM APPEUI[8]= { 0x78, 0x56, 0x34, 0x12, 0x78, 0x56, 0x34, 0x12 };
 void os_getArtEui (u1_t* buf) { memcpy_P(buf, APPEUI, 8);}
