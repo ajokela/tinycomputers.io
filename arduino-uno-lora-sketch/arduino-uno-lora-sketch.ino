@@ -23,12 +23,15 @@
  *
  *******************************************************************************/
 
+/*
 #include <lmic.h>
 #include <hal/hal.h>
 #include <SPI.h>
 
 // Set FILLMEIN to an innocuous value 
 #define FILLMEIN 0x45
+
+*/
 
 // This EUI must be in little-endian format, so least-significant-byte
 // first.
@@ -41,19 +44,20 @@
  * 
  */
 
-static const u1_t PROGMEM APPEUI[8]= { 0x78, 0x56, 0x34, 0x12, 0x78, 0x56, 0x34, 0x12 };
-void os_getArtEui (u1_t* buf) { memcpy_P(buf, APPEUI, 8);}
-
+/*
 // This should also be in little endian format, see above.
-static const u1_t PROGMEM DEVEUI[8] = { 0x78, 0x56, 0x34, 0x12, 0x78, 0x56, 0x34, 0x12 };
-
+static const u1_t PROGMEM DEVEUI[8] = { 0x82, 0xAA, 0x4F, 0xE9, 0x99, 0xF9, 0x81, 0x60 };
 void os_getDevEui (u1_t* buf) { memcpy_P(buf, DEVEUI, 8);}
+
+
+static const u1_t PROGMEM APPEUI[8]= { 0xBA, 0x75, 0x13, 0x4A, 0xFE, 0xF9, 0x81, 0x60 };
+void os_getArtEui (u1_t* buf) { memcpy_P(buf, APPEUI, 8);}
 
 // This key should be in big endian format (or, since it is not really a
 // number but a block of memory, endianness does not really apply). In
 // practice, a key taken from ttnctl can be copied as-is.
 
-static const u1_t PROGMEM APPKEY[16] = { 0x12, 0x34, 0x56, 0x78, 0x12, 0x34, 0x56, 0x78, 0x12, 0x34, 0x56, 0x78, 0x12, 0x34, 0x56, 0x78 };
+static const u1_t PROGMEM APPKEY[16] = { 0xC2, 0x76, 0xED, 0x6D, 0xC8, 0xF5, 0xD2, 0x2B, 0x9F, 0xD6, 0xDB, 0x10, 0x7B, 0x95, 0x2A, 0xD9 };
 void os_getDevKey (u1_t* buf) {  memcpy_P(buf, APPKEY, 16);}
 
 
@@ -134,14 +138,6 @@ void onEvent (ev_t ev) {
         // size, we don't use it in this example.
             LMIC_setLinkCheckMode(0);
             break;
-        /*
-        || This event is defined but not used in the code. No
-        || point in wasting codespace on it.
-        ||
-        || case EV_RFU1:
-        ||     Serial.println(F("EV_RFU1"));
-        ||     break;
-        */
         case EV_JOIN_FAILED:
             Serial.println(F("EV_JOIN_FAILED"));
             break;
@@ -185,14 +181,6 @@ void onEvent (ev_t ev) {
         case EV_LINK_ALIVE:
             Serial.println(F("EV_LINK_ALIVE"));
             break;
-        /*
-        || This event is defined but not used in the code. No
-        || point in wasting codespace on it.
-        ||
-        || case EV_SCAN_FOUND:
-        ||    Serial.println(F("EV_SCAN_FOUND"));
-        ||    break;
-        */
         case EV_TXSTART:
             Serial.println(F("EV_TXSTART"));
             break;
@@ -200,7 +188,7 @@ void onEvent (ev_t ev) {
             Serial.println(F("EV_TXCANCELED"));
             break;
         case EV_RXSTART:
-            /* do not print anything -- it wrecks timing */
+            // do not print anything -- it wrecks timing
             break;
         case EV_JOIN_TXCOMPLETE:
             Serial.println(F("EV_JOIN_TXCOMPLETE: no JoinAccept"));
@@ -213,11 +201,15 @@ void onEvent (ev_t ev) {
     }
 }
 
+*/
+
+/*
 void do_send(osjob_t* j){
     // Check if there is not a current TX/RX job running
     if (LMIC.opmode & OP_TXRXPEND) {
         Serial.println(F("OP_TXRXPEND, not sending"));
     } else {
+
 
         union Payload {
           char *string;
@@ -235,11 +227,13 @@ void do_send(osjob_t* j){
     }
     // Next TX is scheduled after TX_COMPLETE event.
 }
+*/
 
 void setup() {
     Serial.begin(9600);
     Serial.println(F("Starting"));
 
+    /*
     // LMIC init
     os_init();
     // Reset the MAC state. Session and pending data transfers will be discarded.
@@ -251,11 +245,12 @@ void setup() {
 
     // Start job (sending automatically starts OTAA too)
     do_send(&sendjob);
-
+    */
+    
 }
 
 void loop() {
 
     
-    os_runloop_once();
+    // os_runloop_once();
 }
