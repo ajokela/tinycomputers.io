@@ -1,3 +1,4 @@
+
 /*******************************************************************************
  * Copyright (c) 2015 Thomas Telkamp and Matthijs Kooijman
  * Copyright (c) 2018 Terry Moore, MCCI
@@ -23,57 +24,78 @@
  *
  *******************************************************************************/
 
-/*
 #include <lmic.h>
 #include <hal/hal.h>
-#include <SPI.h>
 
-// Set FILLMEIN to an innocuous value 
-#define FILLMEIN 0x45
+//
+// For normal use, we require that you edit the sketch to replace FILLMEIN
+// with values assigned by the TTN console. However, for regression tests,
+// we want to be able to compile these scripts. The regression tests define
+// COMPILE_REGRESSION_TEST, and in that case we define FILLMEIN to a non-
+// working but innocuous value.
+//
+#ifdef COMPILE_REGRESSION_TEST
+# define FILLMEIN 0x64
+#else
+# warning "You must replace the values marked FILLMEIN with real values from the TTN control panel!"
+# define FILLMEIN (#dont edit this, edit the lines that use FILLMEIN)
+#endif
 
+/*
+DevEUI --> 6081F9FE4A1375BA
+AppEUI --> 6081F9FE4A1375BA
+AppKey --> C276ED6DC8F5D22B9FD6DB107B952AD9
 */
 
+
 // This EUI must be in little-endian format, so least-significant-byte
-// first.
-
-/*
- *  APPEUI and DEVUI need to be in little-endian format.  
- *  Take your values from the Helium console, and put them into TinyComputers' EUI Converter
- *  
- *  https://tinycomputers.io/pages/arduino-lmic-eui-generator.html
- * 
- */
-
-/*
-// This should also be in little endian format, see above.
-static const u1_t PROGMEM DEVEUI[8] = { 0x82, 0xAA, 0x4F, 0xE9, 0x99, 0xF9, 0x81, 0x60 };
-void os_getDevEui (u1_t* buf) { memcpy_P(buf, DEVEUI, 8);}
-
-
+// first. When copying an EUI from ttnctl output, this means to reverse
+// the bytes. For TTN issued EUIs the last bytes should be 0xD5, 0xB3,
+// 0x70.
 static const u1_t PROGMEM APPEUI[8]= { 0xBA, 0x75, 0x13, 0x4A, 0xFE, 0xF9, 0x81, 0x60 };
 void os_getArtEui (u1_t* buf) { memcpy_P(buf, APPEUI, 8);}
+
+// This should also be in little endian format, see above.
+static const u1_t PROGMEM DEVEUI[8]= { 0x82, 0xAA, 0x4F, 0xE9, 0x99, 0xF9, 0x81, 0x60 };
+void os_getDevEui (u1_t* buf) { memcpy_P(buf, DEVEUI, 8);}
 
 // This key should be in big endian format (or, since it is not really a
 // number but a block of memory, endianness does not really apply). In
 // practice, a key taken from ttnctl can be copied as-is.
-
-static const u1_t PROGMEM APPKEY[16] = { 0xC2, 0x76, 0xED, 0x6D, 0xC8, 0xF5, 0xD2, 0x2B, 0x9F, 0xD6, 0xDB, 0x10, 0x7B, 0x95, 0x2A, 0xD9 };
+static const u1_t PROGMEM APPKEY[16]= { 0xC2, 0x76, 0xED, 0x6D, 0xC8, 0xF5, 0xD2, 0x2B, 0x9F, 0xD6, 0xDB, 0x10, 0x7B, 0x95, 0x2A, 0xD9 };
 void os_getDevKey (u1_t* buf) {  memcpy_P(buf, APPKEY, 16);}
 
-
+static uint8_t btn_activated[1] = { 0x01};
 static osjob_t sendjob;
 
 // Schedule TX every this many seconds (might become longer due to duty
 // cycle limitations).
-const unsigned TX_INTERVAL = 60;
+const unsigned TX_INTERVAL = 30;
 
-
-// Explict Pin mapping
+/*
+/////////////////////////////////////////////////
+//
+// Elecrow 
+//
+// Pin mapping
 const lmic_pinmap lmic_pins = {
-  .nss = 10,
-  .rxtx = LMIC_UNUSED_PIN,
-  .rst = 7,
-  .dio = {2, 5, 6},
+    .nss = 10,
+    .rxtx = LMIC_UNUSED_PIN,
+    .rst = 9,
+    .dio = {2, 6, 7},
+};
+*/
+
+//////////////////////////////////////////////////
+//
+// Dragino LoRa Shield
+// All jumpers need to be to the LEFT
+// Pin mapping
+const lmic_pinmap lmic_pins = {
+    .nss = 10,
+    .rxtx = LMIC_UNUSED_PIN,
+    .rst = 7,
+    .dio = {2, 5, 6},
 };
 
 void printHex2(unsigned v) {
@@ -83,8 +105,7 @@ void printHex2(unsigned v) {
     Serial.print(v, HEX);
 }
 
-
-int fPort = 1;               // fPort usage: 1=dht11, 2=button, 3=led
+int fPort = 1;               // Port to use
 //-----------------------------
 
 void onEvent (ev_t ev) {
@@ -138,6 +159,14 @@ void onEvent (ev_t ev) {
         // size, we don't use it in this example.
             LMIC_setLinkCheckMode(0);
             break;
+        /*
+        || This event is defined but not used in the code. No
+        || point in wasting codespace on it.
+        ||
+        || case EV_RFU1:
+        ||     Serial.println(F("EV_RFU1"));
+        ||     break;
+        */
         case EV_JOIN_FAILED:
             Serial.println(F("EV_JOIN_FAILED"));
             break;
@@ -181,6 +210,14 @@ void onEvent (ev_t ev) {
         case EV_LINK_ALIVE:
             Serial.println(F("EV_LINK_ALIVE"));
             break;
+        /*
+        || This event is defined but not used in the code. No
+        || point in wasting codespace on it.
+        ||
+        || case EV_SCAN_FOUND:
+        ||    Serial.println(F("EV_SCAN_FOUND"));
+        ||    break;
+        */
         case EV_TXSTART:
             Serial.println(F("EV_TXSTART"));
             break;
@@ -188,7 +225,7 @@ void onEvent (ev_t ev) {
             Serial.println(F("EV_TXCANCELED"));
             break;
         case EV_RXSTART:
-            // do not print anything -- it wrecks timing
+            /* do not print anything -- it wrecks timing */
             break;
         case EV_JOIN_TXCOMPLETE:
             Serial.println(F("EV_JOIN_TXCOMPLETE: no JoinAccept"));
@@ -201,39 +238,34 @@ void onEvent (ev_t ev) {
     }
 }
 
-*/
-
-/*
 void do_send(osjob_t* j){
     // Check if there is not a current TX/RX job running
     if (LMIC.opmode & OP_TXRXPEND) {
         Serial.println(F("OP_TXRXPEND, not sending"));
     } else {
 
-
         union Payload {
-          char *string;
-          byte bytes[13];
+            byte data[16];
+            char text[16];
         };
 
         Payload payload = {"Hello World"};
-        
 
         fPort = 1;
          
         //Prepare upstream data transmission at the next possible time.
-        LMIC_setTxData2(fPort, payload.bytes, sizeof(payload), 0);
+        LMIC_setTxData2(fPort, payload.data, sizeof(payload.data), 0);
+        Serial.print("Packet '");
+        Serial.print(payload.text);
+        Serial.println("'");
         Serial.println(F("Packet queued"));
     }
     // Next TX is scheduled after TX_COMPLETE event.
 }
-*/
 
 void setup() {
     Serial.begin(9600);
-    Serial.println(F("Starting"));
 
-    /*
     // LMIC init
     os_init();
     // Reset the MAC state. Session and pending data transfers will be discarded.
@@ -245,12 +277,11 @@ void setup() {
 
     // Start job (sending automatically starts OTAA too)
     do_send(&sendjob);
-    */
-    
+
+    Serial.println("Setup complete");
+
 }
 
 void loop() {
-
-    
-    // os_runloop_once();
+    os_runloop_once();
 }
